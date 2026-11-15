@@ -11,3 +11,60 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Role {
+  EXPLORER
+  ADMIN
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(EXPLORER)
+  createdAt DateTime @default(now())
+  spots     Spot[]
+  visits    Visit[]
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  spots Spot[]
+}
+
+model Spot {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime @default(now())
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdById Int
+  createdBy   User @relation(fields: [createdById], references: [id])
+
+  visits Visit[]
+
+  @@index([categoryId])
+  @@index([latitude, longitude])
+}
+
+model Visit {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  note      String?
+  visitedAt DateTime @default(now())
+
+  spotId Int
+  spot   Spot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([spotId, userId])
+}
