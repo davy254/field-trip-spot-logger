@@ -1,5 +1,5 @@
 import { Req, UseGuards } from '@nestjs/common';
-import { AuthenticatedRequest } from '../auth/auth.types';
+import type { AuthenticatedRequest } from '../auth/auth.types';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   Body,
