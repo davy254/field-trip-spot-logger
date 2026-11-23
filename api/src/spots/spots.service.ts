@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '../generated/prisma/client';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, Role } from '../generated/prisma/client';
+import { AuthUser } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSpotDto } from './dto/create-spot.dto';
 import { UpdateSpotDto } from './dto/update-spot.dto';
@@ -8,11 +9,11 @@ import { UpdateSpotDto } from './dto/update-spot.dto';
 export class SpotsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateSpotDto) {
+  async create(dto: CreateSpotDto, userId: number) {
     await this.assertCategoryExists(dto.categoryId);
-    await this.assertUserExists(dto.createdById);
+    await this.assertUserExists(userId);
     return this.prisma.spot.create({
-      data: dto,
+      data: { ...dto, createdById: userId },
       include: { category: true },
     });
   }
@@ -79,8 +80,8 @@ export class SpotsService {
     };
   }
 
-  async update(id: number, dto: UpdateSpotDto) {
-    await this.findOne(id);
+  async update(id: number, dto: UpdateSpotDto, user: AuthUser) {
+    await this.assertCanModify(id, user);
     if (dto.categoryId) {
       await this.assertCategoryExists(dto.categoryId);
     }
@@ -91,8 +92,8 @@ export class SpotsService {
     });
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, user: AuthUser) {
+    await this.assertCanModify(id, user);
     return this.prisma.spot.delete({ where: { id } });
   }
 
@@ -111,4 +112,15 @@ export class SpotsService {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
   }
+  // 404 if missing, 403 if the user is neither the owner nor an admin
+  private async assertCanModify(id: number, user: AuthUser) {
+    const spot = await this.prisma.spot.findUnique({ where: { id } });
+    if (!spot) {
+      throw new NotFoundException(`Spot with id ${id} not found`);
+    }
+    if (user.role !== Role.ADMIN && spot.createdById !== user.id) {
+      throw new ForbiddenException('You can only modify your own spots');
+    }
+  }
 }
+

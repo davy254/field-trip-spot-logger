@@ -1,3 +1,6 @@
+import { Req, UseGuards } from '@nestjs/common';
+import { AuthenticatedRequest } from '../auth/auth.types';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   Body,
   Controller,
@@ -19,8 +22,9 @@ export class SpotsController {
   constructor(private readonly spotsService: SpotsService) {}
 
   @Post()
-  create(@Body() dto: CreateSpotDto) {
-    return this.spotsService.create(dto);
+  @UseGuards(JwtAuthGuard)
+  create(@Body() dto: CreateSpotDto, @Req() req: AuthenticatedRequest) {
+    return this.spotsService.create(dto, req.user.id);
   }
 
   @Get()
@@ -40,15 +44,21 @@ export class SpotsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateSpotDto,
+    @Req() req: AuthenticatedRequest,
   ) {
-    return this.spotsService.update(id, dto);
+    return this.spotsService.update(id, dto, req.user);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.spotsService.remove(id);
+  @UseGuards(JwtAuthGuard)
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.spotsService.remove(id, req.user);
   }
 }
