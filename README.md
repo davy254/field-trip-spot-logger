@@ -37,3 +37,20 @@ Deleting a spot or user cascades to their visits. Deleting a category that still
 | POST | /categories | Admin (locked down in the auth lesson) |
 | PATCH | /categories/:id | Admin (locked down in the auth lesson) |
 | DELETE | /categories/:id | Admin (locked down in the auth lesson) |
+
+| POST | /auth/register | Public |
+| POST | /auth/login | Public |
+| POST | /categories | ADMIN |
+| PATCH | /categories/:id | ADMIN |
+| DELETE | /categories/:id | ADMIN |
+| POST | /spots | Logged-in user |
+| PATCH | /spots/:id | Owner or ADMIN |
+| DELETE | /spots/:id | Owner or ADMIN |
+
+## Auth decisions
+- Passwords are hashed with bcrypt (cost 10) and never returned by the API.
+- Tokens are JWTs that expire after 1 hour and carry `sub`, `email` and `role`.
+- Registration always creates an EXPLORER. Admins are created directly in the database.
+- Because the role is stored in the token, a changed role takes effect after the next login.
+- Login returns one generic error for unknown email and wrong password.
+- Write access is enforced on the server with guards, not just hidden in a client.
