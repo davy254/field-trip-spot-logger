@@ -27,3 +27,13 @@ A spot points to a `Category` by id. Renaming a category changes it everywhere, 
 
 ### Delete behaviour
 Deleting a spot or user cascades to their visits. Deleting a category that still has spots is blocked.
+
+
+## API Overview
+| Method | Route | Access |
+|---|---|---|
+| GET | /categories | Public |
+| GET | /categories/:id | Public |
+| POST | /categories | Admin (locked down in the auth lesson) |
+| PATCH | /categories/:id | Admin (locked down in the auth lesson) |
+| DELETE | /categories/:id | Admin (locked down in the auth lesson) |
