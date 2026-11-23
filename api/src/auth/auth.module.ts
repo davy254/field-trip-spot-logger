@@ -4,10 +4,12 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     PassportModule,
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 5 }]), // 5 requests per 60 s
     JwtModule.registerAsync({
       useFactory: () => {
         const secret = process.env.JWT_SECRET;
