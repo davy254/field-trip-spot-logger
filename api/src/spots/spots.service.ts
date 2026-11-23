@@ -37,7 +37,7 @@ export class SpotsService {
       ];
     }
 
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await Promise.all([
       this.prisma.spot.findMany({
         where,
         include: { category: true },
