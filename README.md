@@ -37,7 +37,6 @@ Deleting a spot or user cascades to their visits. Deleting a category that still
 | POST | /categories | Admin (locked down in the auth lesson) |
 | PATCH | /categories/:id | Admin (locked down in the auth lesson) |
 | DELETE | /categories/:id | Admin (locked down in the auth lesson) |
-
 | POST | /auth/register | Public |
 | POST | /auth/login | Public |
 | POST | /categories | ADMIN |
@@ -46,6 +45,11 @@ Deleting a spot or user cascades to their visits. Deleting a category that still
 | POST | /spots | Logged-in user |
 | PATCH | /spots/:id | Owner or ADMIN |
 | DELETE | /spots/:id | Owner or ADMIN |
+| GET | /spots/:spotId/visits | Public |
+| POST | /spots/:spotId/visits | Logged-in user (one per spot) |
+| PATCH | /visits/:id | Visit owner only |
+| DELETE | /visits/:id | Owner or ADMIN |
+| GET | /users/profile | Logged-in user (own data only) |
 
 ## Auth decisions
 - Passwords are hashed with bcrypt (cost 10) and never returned by the API.
@@ -54,3 +58,11 @@ Deleting a spot or user cascades to their visits. Deleting a category that still
 - Because the role is stored in the token, a changed role takes effect after the next login.
 - Login returns one generic error for unknown email and wrong password.
 - Write access is enforced on the server with guards, not just hidden in a client.
+
+
+
+## Rate limiting
+`POST /auth/login` allows 5 attempts per minute per IP and returns 429 after that.
+
+## Trying it out
+Import `docs/postman_collection.json`. Fill in the `seedPassword` variable (Current value only), run **Login (explorer)** first, then work through the folders. The **Failure checks** folder demonstrates the 400, 401 and 403 responses.
